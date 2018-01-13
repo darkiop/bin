@@ -1,7 +1,8 @@
 #!/bin/bash
 #
+# liest Werte aus Kostal Wechselrichter und pusht diese an eine CCU
+#
 # Quelle: http://homematic-forum.de/forum/viewtopic.php?p=131956#p131956
-
 
 PARAMETER_WGET="-q -O - --timeout=10"
 TEMP_PV="/tmp/pv"

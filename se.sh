@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# liest Werte aus Stiebel Eltron ISG Web und pusht diese an eine CCU
 
 IP_CCU2="192.168.1.74"
 IP_ISG="192.168.1.73"
@@ -102,3 +104,5 @@ else
   ISG_ST_WARMWASSERBEREITUNG=inaktiv
   wget $PARAMETER_WGET "http://$IP_CCU2/addons/db/state.cgi?item=ISG_ST_WARMWASSERBEREITUNG&value=$ISG_ST_WARMWASSERBEREITUNG"
 fi
+
+# EOF
