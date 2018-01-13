@@ -1,0 +1,5 @@
+INSTALL
+
+mkdir ~/bin
+cd ~/bin
+git clone https://github.com/darkiop/bin.git .
