@@ -1,0 +1,5 @@
+  # push daten von pv an ccu alle 5min
+ */5 * * * * /home/darkiop/bin/pv.sh > /dev/null 2>&1
+ 
+ # push daten aus isg an ccu alle 5min
+ */5 * * * * /home/darkiop/bin/se.sh > /dev/null 2>&1
