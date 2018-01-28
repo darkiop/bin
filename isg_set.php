@@ -83,7 +83,7 @@ if(isset($_GET["luefterstufetag"])) {
         $para=rawurlencode("[{\"name\":\"val82\",\"value\":".$value."}]");
         if ($debug == true) { var_dump($para); $para = rawurldecode($para); var_dump($para); };
         if ($debug == false) { set_isg_para($para, $value); };
-        echo "Lüfterstufe-Tag auf den Wert ".$value." gesetzt.";
+        echo "Lüfterstufe-Tag auf den Wert ".$value." gesetzt.\n";
     } else {
         echo "falscher Wert für die Lüfterstufe-Tag, Vorgabe: Zwischen ".$min." und ".$max." !\n";
         exit;
