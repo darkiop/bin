@@ -20,6 +20,14 @@ $isg_website = "http://isg";
 $isg_user = "";
 $isg_pw = "";
 
+// ccu2 sv
+$ccu_ip = "192.168.1.74";
+$ccu_url_set_sv_luefterstufetag = "http://".$ccu_ip."/addons/db/state.cgi?item=ISG_LUEFTERSTUFE&value=".$value_get;
+$ccu_url_set_sv_betriebsart = "http://".$ccu_ip."/addons/db/state.cgi?item=ISG_BETRIEBSART&value=".$value_get;
+
+// redirect url
+$redirect = "http://zeus-vm-iobroker:8082/vis/index.html?material#1_page_Heizung";
+
 // argv to $_GET (for use with cli)
 if (isset($argv)) {
     if ($debug) { var_dump($argv); };
@@ -38,6 +46,7 @@ if (!$_GET) {
     exit;
 }
 
+// set isg parameters
 function set_isg_para($para, $value) {
 
     global $isg_website;
@@ -67,6 +76,18 @@ function set_isg_para($para, $value) {
 
 }
 
+// set system-var ccu
+function set_ccu_sv($sv, $sleeptime){
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $sv);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_exec($ch);
+    curl_close($ch);
+    sleep($sleeptime);
+
+}
+
 // Lüfterstufe Tag
 // Gültige Werte:
 // 0 - 3
@@ -80,12 +101,29 @@ if(isset($_GET["luefterstufetag"])) {
     #if (is_int($value)) {echo "zahl";}
 
     if ( ($value >= $min) && ($value <= $max) ) {
+        
         $para=rawurlencode("[{\"name\":\"val82\",\"value\":".$value."}]");
+        
         if ($debug == true) { var_dump($para); $para = rawurldecode($para); var_dump($para); };
         if ($debug == false) { set_isg_para($para, $value); };
-        echo "Lüfterstufe-Tag auf den Wert ".$value." gesetzt.\n";
+        
+        # set ccu2 SV
+        # TODO in function
+        $ccu_url_set_sv_luefterstufetag = "http://192.168.1.74/addons/db/state.cgi?item=ISG_LUEFTERSTUFE&value=".$value_get;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $ccu_url_set_sv_luefterstufetag);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_exec($ch);
+        curl_close($ch);
+        sleep(10);
+        
+        # forward to ioBroker.vis
+        header('Location: http://zeus-vm-iobroker:8082/vis/index.html?material#1_page_Heizung');
+
+        #echo "Lüfterstufe-Tag auf den Wert ".$value." gesetzt.\n";
+        exit;
     } else {
-        echo "falscher Wert für die Lüfterstufe-Tag, Vorgabe: Zwischen ".$min." und ".$max." !\n";
+        #echo "falscher Wert für die Lüfterstufe-Tag, Vorgabe: Zwischen ".$min." und ".$max." !\n";
         exit;
     }
     
@@ -105,10 +143,33 @@ if(isset($_GET["betriebsart"])) {
         echo "falscher Wert für die Betriebsart angegeben!\n";
         echo "korrekte Werte: automatik, warmwasser\n";
     };
+    
     $para=rawurlencode("[{\"name\":\"val39s\",\"value\":".$value."}]");
+    
     if ($debug == true) { var_dump($para); $para = rawurldecode($para); var_dump($para); };
     if ($debug == false) { set_isg_para($para, $value); };
-    echo "Betriebsart auf den Wert ".$value_get." gesetzt.";
+
+    if ($value_get == "automatik") {
+        $value_get = "Automatik";
+    } elseif ($value_get == "warmwasser") {
+        $value_get = "Warmwasser";
+    }
+    #var_dump($value_get);
+
+    # set ccu2 SV
+    # TODO in function
+    $ccu_url_set_sv_betriebsart = "http://192.168.1.74/addons/db/state.cgi?item=ISG_BETRIEBSART&value=".$value_get;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $ccu_url_set_sv_betriebsart);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_exec($ch);
+    curl_close($ch);
+    sleep(10);
+
+    # forward to ioBroker.vis
+    header('Location: http://zeus-vm-iobroker:8082/vis/index.html?material#1_page_Heizung');
+    
+    #echo "Betriebsart auf den Wert ".$value_get." gesetzt.";
 }
 
 // Raumtemperatur Tag
