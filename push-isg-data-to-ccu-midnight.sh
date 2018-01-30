@@ -12,7 +12,7 @@ ISG_DATA_ISTWERTE=/tmp/isg_ist_midnight
 URL="http://$IP_CCU2/addons/db/state.cgi?item="
 
 # get data from isg
-wget $PARAMETER_WGET "http://$IP_ISG/?s=1,0" | html2text | tr -s " \t\r\n" > $ISG_DATA_ISTWERTE
+wget $PARAMETER_WGET "http://$IP_ISG/?s=1,1" | html2text | tr -s " \t\r\n" > $ISG_DATA_ISTWERTE
 
 #ISG_DATUM=$(date +%Y%m%d%H%M)
 #ISG_LUEFTERSTUFE=$(php /home/darkiop/bin/isg_get_luefterstufe.php)
@@ -25,10 +25,12 @@ wget $PARAMETER_WGET "http://$IP_ISG/?s=1,0" | html2text | tr -s " \t\r\n" > $IS
 #ISG_VORLAUF=$(cat $ISG_DATA_ISTWERTE | grep "VORLAUFTEMP." | cut -f2 -d" " | sed 's/','/'.'/g')
 #ISG_RUECKLAUF=$(cat $ISG_DATA_ISTWERTE | grep "RÜCKLAUFTEMPERATUR" | sed 's/'RÜCKLAUFTEMPERATUR'/''/g' | cut -f1 -d " " | sed 's/','/'.'/g')
 #ISG_HEIZSTUFE=$(cat $ISG_DATA_ISTWERTE | grep "HEIZSTUFE" | cut -f2 -d" ")
-#ISG_WM_HEIZEN_TAG=$(cat $ISG_DATA_ISTWERTE | grep "WM HEIZEN TAG" | cut -f4 -d" " | sed 's/','/'.'/g')
+
+ISG_WM_HEIZEN_TAG=$(cat $ISG_DATA_ISTWERTE | grep "WM HEIZEN TAG" | cut -f4 -d" " | sed 's/','/'.'/g')
 ISG_WM_HEIZEN_SUMME=$(cat $ISG_DATA_ISTWERTE | grep "WM HEIZEN SUMME" | cut -f4 -d" " | sed 's/','/'.'/g')
-#ISG_WM_WW_TAG=$(cat $ISG_DATA_ISTWERTE | grep "WM WW TAG" | cut -f4 -d" " | sed 's/','/'.'/g')
+ISG_WM_WW_TAG=$(cat $ISG_DATA_ISTWERTE | grep "WM WW TAG" | cut -f4 -d" " | sed 's/','/'.'/g')
 ISG_WM_WW_SUMME=$(cat $ISG_DATA_ISTWERTE | grep "WM WW SUMME" | cut -f4 -d" " | sed 's/','/'.'/g')
+
 #ISG_LZ_VERDICHTER_HEIZEN=$(cat $ISG_DATA_ISTWERTE | grep "VERDICHTER HEIZEN" | cut -f3 -d" ")
 #ISG_LZ_VERDICHTER_WW=$(cat $ISG_DATA_ISTWERTE | grep "VERDICHTER WW" | cut -f3 -d" ")
 #ISG_LZ_ELEKTR_NE_HEIZEN=$(cat $ISG_DATA_ISTWERTE | grep "ELEKTR. NE HEIZEN" | cut -f4 -d" ")
@@ -80,9 +82,9 @@ ISG_WM_WW_SUMME=$(cat $ISG_DATA_ISTWERTE | grep "WM WW SUMME" | cut -f4 -d" " | 
 #wget $PARAMETER_WGET $URL"ISG_VORLAUF&value="$ISG_VORLAUF
 #wget $PARAMETER_WGET $URL"ISG_RUECKLAUF&value="$ISG_RUECKLAUF
 #wget $PARAMETER_WGET $URL"ISG_HEIZSTUFE&value="$ISG_HEIZSTUFE
-#wget $PARAMETER_WGET $URL"ISG_WM_HEIZEN_TAG&value="$ISG_WM_HEIZEN_TAG
+wget $PARAMETER_WGET $URL"ISG_WM_HEIZEN_TAG&value="$ISG_WM_HEIZEN_TAG
 wget $PARAMETER_WGET $URL"ISG_WM_HEIZEN_SUMME&value="$ISG_WM_HEIZEN_SUMME
-#wget $PARAMETER_WGET $URL"ISG_WM_WW_TAG&value="$ISG_WM_WW_TAG
+wget $PARAMETER_WGET $URL"ISG_WM_WW_TAG&value="$ISG_WM_WW_TAG
 wget $PARAMETER_WGET $URL"ISG_WM_WW_SUMME&value="$ISG_WM_WW_SUMME
 #wget $PARAMETER_WGET $URL"ISG_LZ_VERDICHTER_HEIZEN&value="$ISG_LZ_VERDICHTER_HEIZEN
 #wget $PARAMETER_WGET $URL"ISG_LZ_VERDICHTER_WW&value="$ISG_LZ_VERDICHTER_WW
