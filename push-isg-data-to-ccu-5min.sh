@@ -10,11 +10,13 @@ IP_ISG="192.168.1.73"
 PARAMETER_WGET="-q -O - --timeout=10"
 ISG_DATA_STARTPAGE=/tmp/isg_start
 ISG_DATA_ISTWERTE=/tmp/isg_ist
+ISG_DATA_STATUS=/tmp/isg_status
 URL="http://$IP_CCU2/addons/db/state.cgi?item="
 
 # get data from isg
 wget $PARAMETER_WGET "http://$IP_ISG/?s=0" | html2text | tr -s " \t\r\n" > $ISG_DATA_STARTPAGE
 wget $PARAMETER_WGET "http://$IP_ISG/?s=1,0" | html2text | tr -s " \t\r\n" > $ISG_DATA_ISTWERTE
+wget $PARAMETER_WGET "http://$IP_ISG/?s=2,0" | html2text | tr -s " \t\r\n" > $ISG_DATA_STATUS
 
 ISG_DATUM=$(date +%Y%m%d%H%M)
 ISG_LUEFTERSTUFE=$(php /home/darkiop/bin/isg_get_luefterstufe.php)
@@ -35,6 +37,14 @@ ISG_LZ_VERDICHTER_HEIZEN=$(cat $ISG_DATA_ISTWERTE | grep "VERDICHTER HEIZEN" | c
 ISG_LZ_VERDICHTER_WW=$(cat $ISG_DATA_ISTWERTE | grep "VERDICHTER WW" | cut -f3 -d" ")
 ISG_LZ_ELEKTR_NE_HEIZEN=$(cat $ISG_DATA_ISTWERTE | grep "ELEKTR. NE HEIZEN" | cut -f4 -d" ")
 ISG_LZ_ELEKTR_NE_WW=$(cat $ISG_DATA_ISTWERTE | grep "ELEKTR. NE WW" | cut -f4 -d" ")
+
+# FILTERWECHSEL
+ISG_FILTERWECHSEL=$(cat $ISG_DATA_STATUS | grep FILTERWECHSEL | grep symbol_an)
+if [ $? -ne 0 ]; then
+  ISG_FILTERWECHSEL="nicht erforderlich"
+else
+  ISG_FILTERRWECHSEL="erforderlich"
+fi
 
 # BETRIEBSART
 if test `grep '#AUTOMATIK' $ISG_DATA_STARTPAGE | sed 's/'#'/''/g'`; then
@@ -90,6 +100,9 @@ wget $PARAMETER_WGET $URL"ISG_LZ_VERDICHTER_HEIZEN&value="$ISG_LZ_VERDICHTER_HEI
 wget $PARAMETER_WGET $URL"ISG_LZ_VERDICHTER_WW&value="$ISG_LZ_VERDICHTER_WW
 wget $PARAMETER_WGET $URL"ISG_LZ_ELEKTR_NE_HEIZEN&value="$ISG_LZ_ELEKTR_NE_HEIZEN
 wget $PARAMETER_WGET $URL"ISG_LZ_ELEKTR_NE_WW&value="$ISG_LZ_ELEKTR_NE_WW
+
+# FILTERWECHSEL
+wget $PARAMETER_WGET $URL"ISG_FILTERWECHSEL&value="$ISG_FILTERRWECHSEL
 
 # PUSH BETRIEBSART
 wget $PARAMETER_WGET $URL"ISG_BETRIEBSART&value="$ISG_BETRIEBSART
