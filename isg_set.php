@@ -22,11 +22,18 @@ $isg_pw = "";
 
 // ccu2 sv
 $ccu_ip = "192.168.1.74";
-$ccu_url_set_sv_luefterstufetag = "http://".$ccu_ip."/addons/db/state.cgi?item=ISG_LUEFTERSTUFE&value=".$value_get;
-$ccu_url_set_sv_betriebsart = "http://".$ccu_ip."/addons/db/state.cgi?item=ISG_BETRIEBSART&value=".$value_get;
+$ccu_url_set_sv_luefterstufetag = "http://".$ccu_ip."/addons/db/state.cgi?item=ISG_LUEFTERSTUFE&value=";
+$ccu_url_set_sv_betriebsart = "http://".$ccu_ip."/addons/db/state.cgi?item=ISG_BETRIEBSART&value=";
 
-// redirect url
-$redirect = "http://zeus-vm-iobroker:8082/vis/index.html?material#1_page_Heizung";
+// iobroker datapoint
+$iobroker_ip = "192.168.1.43:8087";
+$iobroker_dp_betriebsart = "hm-rega.0.4147";
+$iobroker_dp_luefterstufetag = "hm-rega.0.4156";
+$iobroker_set_luefterstufetag = "http://".$iobroker_ip."/set/".$iobroker_dp_luefterstufetag."?value=";
+$iobroker_set_betriebsart = "http://".$iobroker_ip."/set/".$iobroker_dp_betriebsart."?value=";
+
+// redirect url (iobroker.vis view)
+$redirect = "http://odin:8082/vis/index.html?material#1_page_Klima";
 
 // argv to $_GET (for use with cli)
 if (isset($argv)) {
@@ -63,6 +70,7 @@ function set_isg_para($para, $value) {
         // TODO geht nicht ...
         curl_setopt ($cu, CURLOPT_POSTFIELDS, "make=send&pass=".$isg_pw."&user=".$isg_user."");
     }
+
     curl_setopt($cu, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt ($cu, CURLOPT_COOKIEJAR, 'cookie.txt');
     curl_setopt ($cu, CURLOPT_RETURNTRANSFER, 1);
@@ -76,8 +84,13 @@ function set_isg_para($para, $value) {
 
 }
 
-// set system-var ccu
-function set_ccu_sv($sv, $sleeptime){
+// set ccu sv and iobroker dp
+function set_sv_and_dp($sv, $sleeptime){
+
+    global $ccu_url_set_sv_luefterstufetag;
+    global $ccu_url_set_sv_betriebsart;
+    global $iobroker_set_luefterstufetag;
+    global $iobroker_set_betriebsart;
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $sv);
@@ -92,47 +105,45 @@ function set_ccu_sv($sv, $sleeptime){
 // Gültige Werte:
 // 0 - 3
 if(isset($_GET["luefterstufetag"])) {
-    $value = $_GET["luefterstufetag"];
+
+    $value_get = $_GET["luefterstufetag"];
     $min = 0;
     $max = 3;
 
-    // TODO Überpürfung ob Wert = Zahl
-    #var_dump($value);
-    #if (is_int($value)) {echo "zahl";}
-
-    if ( ($value >= $min) && ($value <= $max) ) {
+    if ( ($value_get >= $min) && ($value_get <= $max) ) {
         
-        $para=rawurlencode("[{\"name\":\"val82\",\"value\":".$value."}]");
+        $para=rawurlencode("[{\"name\":\"val82\",\"value\":".$value_get."}]");
         
         if ($debug == true) { var_dump($para); $para = rawurldecode($para); var_dump($para); };
-        if ($debug == false) { set_isg_para($para, $value); };
+        if ($debug == false) { set_isg_para($para, $value_get); };
         
-        # set ccu2 SV
-        # TODO in function
-        $ccu_url_set_sv_luefterstufetag = "http://192.168.1.74/addons/db/state.cgi?item=ISG_LUEFTERSTUFE&value=".$value_get;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $ccu_url_set_sv_luefterstufetag);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_exec($ch);
-        curl_close($ch);
-        sleep(10);
-        
+        # set ccu sv and iobroker dp
+        $ccu_url_set_sv_luefterstufetag = $ccu_url_set_sv_luefterstufetag.$value_get;
+        $iobroker_set_luefterstufetag = $iobroker_set_luefterstufetag.$value_get;
+        set_sv_and_dp($ccu_url_set_sv_luefterstufetag, 1);
+        set_sv_and_dp($iobroker_set_luefterstufetag, 1);
+       
         # forward to ioBroker.vis
-        header('Location: http://zeus-vm-iobroker:8082/vis/index.html?material#1_page_Heizung');
+        header('Location:' .$redirect);
 
-        #echo "Lüfterstufe-Tag auf den Wert ".$value." gesetzt.\n";
         exit;
+
     } else {
-        #echo "falscher Wert für die Lüfterstufe-Tag, Vorgabe: Zwischen ".$min." und ".$max." !\n";
+        
+        echo "falscher Wert für die Lüfterstufe-Tag, Vorgabe: Zwischen ".$min." und ".$max." !\n";
+        
         exit;
+
     }
     
 }
 
 // Betriebsart
 // Gültige Werte:
-// 11 = AUTOMATIK, 1 = BEREITSCHAFT, 3 = TAGBETRIEB, 4 = ABSENKBETRIEB, 5 = WARMWASSER, 14 = HANDBETRIEB, 0 = NOTBETRIEB
+// 11 = AUTOMATIK, 1 = BEREITSCHAFT, 3 = TAGBETRIEB, 4 = ABSENKBETRIEB,
+// 5 = WARMWASSER, 14 = HANDBETRIEB, 0 = NOTBETRIEB
 if(isset($_GET["betriebsart"])) {
+
     $value_get = $_GET["betriebsart"];
     if ($value_get == "automatik") {
         $value = "11";
@@ -142,6 +153,7 @@ if(isset($_GET["betriebsart"])) {
         $value = null;
         echo "falscher Wert für die Betriebsart angegeben!\n";
         echo "korrekte Werte: automatik, warmwasser\n";
+        exit;
     };
     
     $para=rawurlencode("[{\"name\":\"val39s\",\"value\":".$value."}]");
@@ -154,22 +166,18 @@ if(isset($_GET["betriebsart"])) {
     } elseif ($value_get == "warmwasser") {
         $value_get = "Warmwasser";
     }
-    #var_dump($value_get);
 
-    # set ccu2 SV
-    # TODO in function
-    $ccu_url_set_sv_betriebsart = "http://192.168.1.74/addons/db/state.cgi?item=ISG_BETRIEBSART&value=".$value_get;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $ccu_url_set_sv_betriebsart);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_exec($ch);
-    curl_close($ch);
-    sleep(10);
+    # set ccu sv and iobroker dp
+    $ccu_url_set_sv_betriebsart = $ccu_url_set_sv_betriebsart.$value_get;
+    $iobroker_set_betriebsart = $iobroker_set_betriebsart.$value_get;
+    set_sv_and_dp($ccu_url_set_sv_betriebsart, 1);
+    set_sv_and_dp($iobroker_set_betriebsart, 1);
 
     # forward to ioBroker.vis
-    header('Location: http://zeus-vm-iobroker:8082/vis/index.html?material#1_page_Heizung');
-    
-    #echo "Betriebsart auf den Wert ".$value_get." gesetzt.";
+    header('Location:' .$redirect);
+
+    exit;
+
 }
 
 // Raumtemperatur Tag
